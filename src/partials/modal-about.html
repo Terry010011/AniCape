@@ -1,0 +1,126 @@
+<!-- ============================================================
+     ABOUT MODAL
+     ============================================================ -->
+<div id="aboutModal" class="modal-overlay">
+    <div class="modal-content modal-content--xl">
+        <div class="modal-header">
+            <h2 data-i18n="about">About</h2>
+            <button id="aboutCloseBtn" class="modal-close-btn">✕</button>
+        </div>
+        <div class="modal-body about-body modal-body--about">
+            <h2 data-i18n="about_title"></h2>
+            <p data-i18n="about_intro"></p>
+
+            <div class="origin-section">
+                <h4 data-i18n="about_origin_title"></h4>
+                <p data-i18n="about_origin_p1"></p>
+                <p data-i18n="about_origin_p2"></p>
+                <p data-i18n="about_origin_p3"></p>
+                <p data-i18n="about_origin_p4"></p>
+            </div>
+
+            <h3 data-i18n="about_features_title"></h3>
+            <ul>
+                <li data-i18n="about_feat_layers"></li>
+                <li data-i18n="about_feat_anim"></li>
+                <li data-i18n="about_feat_clip"></li>
+                <li data-i18n="about_feat_export"></li>
+                <li data-i18n="about_feat_compress"></li>
+                <li data-i18n="about_feat_3d"></li>
+                <li data-i18n="about_feat_undo"></li>
+                <li data-i18n="about_feat_rwd"></li>
+                <li data-i18n="about_feat_i18n"></li>
+                <li data-i18n="about_feat_tutorial"></li>
+            </ul>
+
+            <h3 data-i18n="about_arch_title">Program Architecture</h3>
+            <p data-i18n="about_arch_desc">The project uses pure HTML/CSS/JavaScript (No Frameworks), modularized into
+                the following files:</p>
+            <div class="arch-grid">
+                <div class="arch-card" data-i18n="about_arch_core"></div>
+                <div class="arch-card" data-i18n="about_arch_logic"></div>
+                <div class="arch-card" data-i18n="about_arch_layers"></div>
+                <div class="arch-card" data-i18n="about_arch_ui_mod"></div>
+                <div class="arch-card" data-i18n="about_arch_parsers"></div>
+                <div class="arch-card" data-i18n="about_arch_export_mod"></div>
+                <div class="arch-card" data-i18n="about_arch_events_mod"></div>
+                <div class="arch-card" data-i18n="about_arch_workers"></div>
+            </div>
+
+            <h3 data-i18n="about_libs_title"></h3>
+            <div class="table-responsive">
+                <table class="libs-table">
+                    <thead>
+                        <tr>
+                            <th data-i18n="about_libs_th_lib"></th>
+                            <th data-i18n="about_libs_th_file"></th>
+                            <th data-i18n="about_libs_th_usage"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Pako</td>
+                            <td><code>pako.min.js</code></td>
+                            <td data-i18n="about_libs_pako"></td>
+                        </tr>
+                        <tr>
+                            <td>UPNG.js</td>
+                            <td><code>UPNG.min.js</code></td>
+                            <td data-i18n="about_libs_upng"></td>
+                        </tr>
+                        <tr>
+                            <td>gif.js</td>
+                            <td><code>gif.js</code> + <code>gif.worker.js</code></td>
+                            <td data-i18n="about_libs_gif"></td>
+                        </tr>
+                        <tr>
+                            <td>omggif</td>
+                            <td><code>omggif.js</code></td>
+                            <td data-i18n="about_libs_omggif"></td>
+                        </tr>
+                        <tr>
+                            <td>OxiPNG (Squoosh)</td>
+                            <td><code>squoosh_oxipng.js</code> + <code>squoosh_oxipng_bg.wasm</code></td>
+                            <td data-i18n="about_libs_oxipng"></td>
+                        </tr>
+                        <tr>
+                            <td>JSZip</td>
+                            <td><code>jszip.min.js</code></td>
+                            <td data-i18n="about_libs_jszip"></td>
+                        </tr>
+                        <tr>
+                            <td>skinview3d</td>
+                            <td><code>skinview3d.bundle.js</code></td>
+                            <td data-i18n="about_libs_skinview3d"></td>
+                        </tr>
+                        <tr>
+                            <td>Driver.js</td>
+                            <td><code>driver.js.iife.js</code> + <code>driver.css</code></td>
+                            <td data-i18n="about_libs_driver"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Developer card -->
+            <div class="developer-section">
+                <div class="dev-orb dev-orb--tl"></div>
+                <div class="dev-orb dev-orb--br"></div>
+                <div class="dev-dots"></div>
+                <div class="dev-content">
+                    <img src="https://minotar.net/helm/c3cd10357b2249ebb88475de25640743/100.png" crossorigin="anonymous"
+                        alt="Developer" class="dev-avatar">
+                    <div class="dev-info">
+                        <span class="dev-badge" data-i18n="developer"></span>
+                        <span class="dev-name">Terry2015</span>
+                    </div>
+                </div>
+            </div>
+
+            <p class="footer-note" data-i18n="about_footer"></p>
+        </div>
+        <div class="modal-footer">
+            <button id="aboutDoneBtn" class="primary btn-highlight">OK</button>
+        </div>
+    </div>
+</div>

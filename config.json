@@ -1,0 +1,15 @@
+{
+  "system": {
+    "defaultZoom": 0.1,
+    "defaultTolerance": 80
+  },
+  "regions": [
+    { "id": "front", "name": "Front (正面)", "color": "#0000FF" },
+    { "id": "back", "name": "Back (背面)", "color": "#FF0000" },
+    { "id": "border-top", "name": "Border-TOP (上邊框)", "color": "#00FFFF" },
+    { "id": "border-left", "name": "Border-LEFT (左邊框)", "color": "#FFFF00" },
+    { "id": "border-right", "name": "Border-RIGHT (右邊框)", "color": "#FFA500" },
+    { "id": "border-bottom", "name": "Border-BOTTOM (下邊框)", "color": "#800080" },
+    { "id": "elytra", "name": "Elytra (鞘翅)", "color": "#00FF00" }
+  ]
+}

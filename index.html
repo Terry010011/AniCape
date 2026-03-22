@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>AniCape | Minecraft Animated Cape Maker</title>
+
+    <!-- SEO -->
+    <meta name="description"
+        content="Create animated capes for Minecraft such as Wynntils and MinecraftCapes. An online tool for designing custom animated capes. | 為 Minecraft (如 Wynntils、MinecraftCapes) 製作動畫披風。一個用於設計自定義動畫披風的在線工具。">
+    <meta name="keywords"
+        content="minecraft cape editor, animated cape maker, wynntils cape editor, minecraftcapes editor, animated cape, custom cape, minecraft, 動畫披風, 披風編輯器, wynntils披風, minecraftcapes">
+
+    <!-- Hreflang -->
+    <link rel="alternate" hreflang="en" href="https://anicape.wryy.org/">
+    <link rel="alternate" hreflang="zh" href="https://anicape.wryy.org/">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="AniCape | Animated Cape Maker">
+    <meta property="og:description"
+        content="Create animated capes for Minecraft such as Wynntils and MinecraftCapes. An online tool for designing custom animated capes. | 為 Minecraft (如 Wynntils、MinecraftCapes) 製作動畫披風。一個用於設計自定義動畫披風的在線工具。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://anicape.wryy.org/">
+    <meta property="og:image" content="https://anicape.wryy.org/assets/og-image.png">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="libs/driver.css">
+
+    <!-- PWA -->
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffffff">
+
+    <!-- Libraries (must load before app modules) -->
+    <script src="libs/pako.min.js"></script>
+    <script src="libs/jszip.min.js"></script>
+    <script src="libs/UPNG.min.js"></script>
+    <script src="libs/gif.js"></script>
+    <script src="libs/omggif.js"></script>
+    <script src="libs/skinview3d.bundle.js"></script>
+    <script src="libs/driver.js.iife.js"></script>
+
+    <!-- Apply saved theme before first paint to avoid flash -->
+    <script>
+        (function () {
+            var saved = localStorage.getItem('cape_editor_theme');
+            var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', theme === 'dark' ? '#252529' : '#ffffff');
+        })();
+    </script>
+
+    <!-- Service Worker registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
+            });
+        }
+    </script>
+</head>
+
+<body id="app-body">
+
+    <!-- ============================================================
+         HEADER
+         ============================================================ -->
+    <header>
+        <div class="header-brand">
+            <img src="assets/logo_light.svg" alt="Logo" class="logo light-logo">
+            <img src="assets/logo_dark.svg" alt="Logo" class="logo dark-logo">
+            <h1>AniCape</h1>
+            <span class="header-subtitle desktop-only">Animated Cape Maker</span>
+        </div>
+        <div class="toolbar">
+            <button class="icon-btn" id="themeToggle" data-i18n-title="themeToggle">
+                <svg class="sun-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="20"
+                    height="20" style="display:none;">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                    </path>
+                </svg>
+                <svg class="moon-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="20"
+                    height="20">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                    </path>
+                </svg>
+            </button>
+            <button id="langToggle">EN/中</button>
+            <button class="primary" id="exportBtn">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                <span data-i18n="export">Export</span>
+            </button>
+            <button class="mobile-toggle icon-btn" id="menuToggle" data-i18n-title="menu">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- ============================================================
+         MAIN LAYOUT
+         ============================================================ -->
+    <div class="main-container">
+
+        <!-- WORKSPACE -->
+        <div class="workspace-wrapper">
+            <div class="workspace" id="workspace">
+
+                <!-- Tutorial button -->
+                <button id="tutorialBtn" title="Start Tutorial" class="tutorial-btn">
+                    <img src="assets/tutorial.svg" alt="Tutorial">
+                </button>
+
+                <!-- Undo / Redo -->
+                <div class="history-controls">
+                    <button id="undoBtn" data-i18n-title="undo">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 7v6h6"></path>
+                            <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"></path>
+                        </svg>
+                    </button>
+                    <button id="redoBtn" data-i18n-title="redo">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 7v6h-6"></path>
+                            <path d="M3 17a9 9 0 019-9 9 9 0 016 2.3l3 2.7"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Mobile pan controls -->
+                <div class="mobile-controls mobile-only">
+                    <button id="moveUp" class="move-btn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 15l-6-6-6 6"></path>
+                        </svg>
+                    </button>
+                    <div class="btn-row">
+                        <button id="moveLeft" class="move-btn">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M15 18l-6-6 6-6"></path>
+                            </svg>
+                        </button>
+                        <button id="moveDown" class="move-btn">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 9l6 6 6-6"></path>
+                            </svg>
+                        </button>
+                        <button id="moveRight" class="move-btn">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 18l6-6-6-6"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Zoom controls -->
+                <div class="zoom-controls">
+                    <button id="zoomInBtn" data-i18n-title="zoom_in_tip">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                    <button id="centerCanvasBtn" data-i18n-title="center_canvas">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+                            <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+                            <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+                            <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+                        </svg>
+                    </button>
+                    <button id="zoomOutBtn" data-i18n-title="zoom_out_tip">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Canvas -->
+                <div class="canvas-container" id="canvasContainer">
+                    <canvas id="mainCanvas"></canvas>
+                    <div id="gridLayer" class="grid-layer"></div>
+                </div>
+
+                <!-- Gizmo overlay -->
+                <div id="gizmoLayer" class="gizmo-layer"></div>
+
+                <!-- Transform tooltip -->
+                <div id="dragTooltip" class="drag-tooltip"></div>
+
+            </div><!-- /.workspace -->
+
+            <!-- Keyboard shortcuts hint (hidden on touch, shown by JS) -->
+            <div id="shortcutsHint" class="shortcuts-hint" style="display:none;">
+                <div class="shortcuts-hint-title" data-i18n="hotkeys_title">SHORTCUTS</div>
+
+                <div class="hint-section">
+                    <div class="hint-cat" data-i18n="hotkeys_cat_canvas">CANVAS</div>
+                    <div data-i18n="hotkeys_zoom"></div>
+                    <div data-i18n="hotkeys_pan"></div>
+                    <div data-i18n="hotkeys_save_project"></div>
+                    <div data-i18n="hotkeys_export"></div>
+                </div>
+
+                <div class="hint-section">
+                    <div class="hint-cat" data-i18n="hotkeys_cat_layer">LAYER</div>
+                    <div data-i18n="hotkeys_scale"></div>
+                    <div data-i18n="hotkeys_rotate"></div>
+                    <div data-i18n="hotkeys_align_auto"></div>
+                    <div data-i18n="hotkeys_align_edges"></div>
+                    <div data-i18n="hotkeys_align_center"></div>
+                    <div data-i18n="hotkeys_duplicate"></div>
+                    <div data-i18n="hotkeys_delete"></div>
+                </div>
+
+                <div class="hint-section">
+                    <div class="hint-cat" data-i18n="hotkeys_cat_history">HISTORY</div>
+                    <div data-i18n="hotkeys_undo"></div>
+                    <div data-i18n="hotkeys_redo"></div>
+                </div>
+            </div>
+
+            <!-- Zoom bar -->
+            <div class="zoom-bar">
+                <span class="zoom-label">-</span>
+                <input type="range" id="zoomSlider" min="1" max="5000" value="100" step="1">
+                <span class="zoom-label">+</span>
+                <span id="zoomValue" class="zoom-label">100%</span>
+            </div>
+        </div><!-- /.workspace-wrapper -->
+
+        <!-- ============================================================
+             SIDEBAR
+             ============================================================ -->
+        <div class="sidebar" id="sidebar">
+
+            <!-- Project -->
+            <div class="panel-section" id="projectSection">
+                <div class="panel-title" data-i18n="project_title">PROJECT</div>
+                <div class="btn-row">
+                    <button id="openProjectBtn" class="btn-panel">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="20"
+                            height="20">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                        </svg>
+                        <span data-i18n="open_project">Open Project</span>
+                    </button>
+                    <button id="saveProjectBtn" class="btn-panel">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="20"
+                            height="20">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4">
+                            </path>
+                        </svg>
+                        <span data-i18n="save_project">Save Project</span>
+                    </button>
+                </div>
+                <input type="file" id="projectInput" accept=".anicape,.zip" class="hidden">
+            </div>
+
+            <!-- Template / Settings -->
+            <div class="panel-section" id="templateSection">
+                <div class="panel-title">
+                    <span data-i18n="settings">TEMPLATE</span>
+                    <button id="dlTemplateBtn" class="btn-sm">Download</button>
+                </div>
+
+                <label data-i18n="size_preset">Size Preset</label>
+                <select id="sizeSelect">
+                    <option value="64x32">64x32</option>
+                    <option value="128x64" selected>128x64</option>
+                    <option value="256x128">256x128</option>
+                    <option value="512x256">512x256</option>
+                    <option value="1024x512">1024x512</option>
+                    <option value="2048x1024">2048x1024</option>
+                    <option value="custom" data-i18n="custom_upload">Custom Upload...</option>
+                </select>
+
+                <label data-i18n="target_mod" class="mt-10">Target Mod</label>
+                <select id="targetModSelect">
+                    <option value="wynntils">Wynntils (PNG Strip)</option>
+                    <option value="minecraftcapes">MinecraftCapes (Animated GIF)</option>
+                </select>
+
+                <div id="resampleToggleWrapper" class="resample-wrapper" style="display:none;">
+                    <div class="resample-check-row">
+                        <input type="checkbox" id="resampleCheck" checked>
+                        <label for="resampleCheck" data-i18n="resample_label">Resample at 100ms</label>
+                    </div>
+                    <small class="resample-desc" data-i18n="resample_desc">Resamples frames at 100ms intervals to match
+                        MinecraftCapes playback speed. Disabling preserves all original frames but animation speed may
+                        differ.</small>
+                </div>
+
+                <input type="file" id="templateInput" accept="image/*" class="hidden">
+
+                <div class="toggle-row">
+                    <label for="showTemplateCheck" data-i18n="show_bg">Show BG</label>
+                    <input type="checkbox" id="showTemplateCheck" data-i18n-title="show_template_tip" checked>
+                </div>
+                <div class="toggle-row">
+                    <label for="showGridCheck" data-i18n="show_grid">Show Grid</label>
+                    <input type="checkbox" id="showGridCheck" data-i18n-title="show_grid_tip" checked>
+                </div>
+
+                <div class="mt-10">
+                    <button class="toggle-link" id="advToggle" data-i18n="advanced_colors">Advanced (Colors &amp;
+                        Map)</button>
+                </div>
+
+                <div class="advanced-content" id="advContent">
+                    <div id="dynamicColorList" class="color-list"></div>
+                    <button class="add-color-btn" id="addColorBtn" data-i18n="add_color_region">+ Add Custom
+                        Region</button>
+
+                    <hr class="panel-divider">
+
+                    <label data-i18n="tolerance">Tolerance (0-255)</label>
+                    <input type="number" id="toleranceInput" value="80" min="0" max="255">
+                    <button id="reprocessBtn" class="btn-block mt-8" data-i18n="apply_map">Apply Color Map</button>
+
+                    <hr class="panel-divider">
+
+                    <div class="btn-row">
+                        <button id="exportConfigBtn" class="btn-sm" style="flex:1;" data-i18n="export_config">Export
+                            Config</button>
+                        <button id="importConfigBtn" class="btn-sm" style="flex:1;" data-i18n="import_config">Import
+                            Config</button>
+                    </div>
+                    <button id="resetConfigBtn" class="btn-block btn-sm mt-8" data-i18n="reset_to_default">Reset to
+                        Default</button>
+                    <input type="file" id="configInput" accept=".json" class="hidden">
+                </div>
+            </div>
+
+            <!-- Layers -->
+            <div class="panel-section">
+                <div class="panel-title" data-i18n="layers">LAYERS</div>
+                <div class="btn-row" style="margin-bottom:10px;">
+                    <button id="addImageBtn" class="btn-panel">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="20"
+                            height="20">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                        <span data-i18n="add_layer">+ Add Image</span>
+                    </button>
+                    <button id="addSolidLayerBtn" class="btn-panel">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="20"
+                            height="20">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01">
+                            </path>
+                        </svg>
+                        <span data-i18n="add_solid">+ Solid</span>
+                    </button>
+                    <button id="duplicateLayerBtn" class="btn-panel" data-i18n-title="duplicate_tip">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="20"
+                            height="20">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                        <span data-i18n="duplicate_layer">Duplicate</span>
+                    </button>
+                </div>
+                <input type="file" id="layerInput" accept="image/*" class="hidden">
+
+                <div class="check-row">
+                    <input type="checkbox" id="autoSelectLayerCheck" data-i18n-title="auto_select_tip" checked>
+                    <label for="autoSelectLayerCheck" data-i18n="auto_select_layer">Auto-Select Layer</label>
+                </div>
+
+                <ul class="layer-list" id="layerList"></ul>
+            </div>
+
+            <!-- Layer Properties -->
+            <div class="panel-section hidden" id="layerProperties">
+                <div class="panel-title" data-i18n="properties">PROPERTIES</div>
+
+                <!-- Name -->
+                <div class="row">
+                    <div class="col">
+                        <label data-i18n="layer_name">Name</label>
+                        <input type="text" id="propLayerName" spellcheck="false">
+                    </div>
+                </div>
+
+                <!-- Clipping -->
+                <div class="clip-header mt-15">
+                    <label data-i18n="clip_area">Clipping Area</label>
+                    <div class="clip-all">
+                        <input type="checkbox" id="autoClipCheck" checked>
+                        <label for="autoClipCheck" data-i18n="select_all_regions">All</label>
+                    </div>
+                </div>
+                <div id="clipCheckboxes" class="checkbox-group"></div>
+
+                <!-- Opacity -->
+                <div id="propOpacityRow">
+                    <label data-i18n="opacity">Opacity</label>
+                    <div class="row opacity-row">
+                        <input type="range" id="propOpacity" class="opacity-slider" min="0" max="1" step="0.05">
+                        <input type="number" id="propOpacityInput" class="opacity-input" min="0" max="1" step="0.05">
+                    </div>
+                    <small class="opacity-tip" data-i18n="opacity_transparency_tip"></small>
+                </div>
+
+                <!-- Solid color picker -->
+                <div class="row hidden color-row-inline" id="propColorRow">
+                    <label data-i18n="color">Color</label>
+                    <input type="color" id="propSolidColor">
+                </div>
+
+                <!-- Scale / Rotation -->
+                <div class="row scale-config-row">
+                    <div class="col">
+                        <label data-i18n="scale">Scale %</label>
+                    </div>
+                    <div class="col row-flex-end">
+                        <span class="dim-label">W:</span>
+                        <input type="number" id="propWidth" class="small-input" step="1">
+                        <button id="propScaleLock" class="lock-btn locked" title="Lock Aspect Ratio">
+                            <svg class="lock-unlocked hidden" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+                            </svg>
+                            <svg class="lock-locked" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </button>
+                        <span class="dim-label">H:</span>
+                        <input type="number" id="propHeight" class="small-input" step="1">
+                    </div>
+                </div>
+
+                <div class="row mt-10 align-center">
+                    <div class="col">
+                        <label data-i18n="rotation" style="margin-top:0;">Rotation</label>
+                    </div>
+                    <div class="col row-flex-end">
+                        <input type="number" id="propRot" class="small-input" step="1">
+                        <span class="unit-label">°</span>
+                    </div>
+                </div>
+
+                <!-- Flip -->
+                <div class="row mt-10">
+                    <button id="btnFlipX" style="flex:1;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2v20"></path>
+                            <path d="M8 8l-4 4 4 4"></path>
+                            <path d="M16 8l4 4-4 4"></path>
+                        </svg>
+                        <span data-i18n="flip_x">Flip H</span>
+                    </button>
+                    <button id="btnFlipY" style="flex:1;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 12h20"></path>
+                            <path d="M8 8l4-4 4 4"></path>
+                            <path d="M8 16l4 4 4-4"></path>
+                        </svg>
+                        <span data-i18n="flip_y">Flip V</span>
+                    </button>
+                </div>
+
+                <!-- Animation controls -->
+                <div id="animationFrameControls" class="anim-controls" style="display:none;">
+                    <label class="anim-label" data-i18n="frame_multiplier">Frame Multiplier</label>
+                    <div class="anim-input-row">
+                        <input type="number" id="frameMultiplierInput" class="anim-input" min="1" max="100" value="1"
+                            step="1">
+                    </div>
+                    <small id="frameSizeInfo" class="anim-info"></small>
+
+                    <div id="wynntilsExtendedControls">
+                        <div id="targetFpsSetting" class="fps-row">
+                            <label data-i18n="target_fps">Target FPS</label>
+                            <input type="range" id="targetFpsSlider" class="fps-slider" min="10" max="60" value="60">
+                            <span id="targetFpsValue" class="fps-value">Max</span>
+                        </div>
+                        <small id="targetFpsDesc" class="fps-desc" data-i18n="target_fps_desc">Adjusts framerate of
+                            final GIF using frame skipping (10 to Original FPS)</small>
+                        <small class="playback-info" data-i18n="playback_duration">2 seconds playback (wynntils)</small>
+                    </div>
+                    <small id="minecraftcapesPlaybackInfo" class="playback-info" style="display:none;"
+                        data-i18n="minecraftcapes_playback_info"></small>
+                </div>
+
+                <!-- Delete -->
+                <button id="deleteLayerBtn" class="btn-delete">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h18"></path>
+                        <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+                    </svg>
+                    <span data-i18n="delete">Delete Layer</span>
+                </button>
+            </div>
+
+            <!-- Sidebar footer -->
+            <div class="sidebar-footer">
+                <button class="secondary-btn" id="faqBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    <span data-i18n="faq">FAQ</span>
+                </button>
+                <button class="secondary-btn" id="aboutBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                    <span data-i18n="about">About</span>
+                </button>
+            </div>
+
+        </div><!-- /.sidebar -->
+
+        <!-- Modal partials are injected here at runtime by loader.js -->
+        <div id="modals-root"></div>
+
+    </div><!-- /.main-container -->
+
+    <!-- ============================================================
+         APPLICATION MODULES  (load order matters)
+         ── Tier 0: primitives (no dependencies) ────────────────── -->
+    <script src="src/constants.js"></script>
+    <script src="src/core/EventBus.js"></script>
+
+    <!-- ── Tier 1: core framework ───────────────────────────────── -->
+    <script src="src/core/i18n.js"></script>
+    <script src="src/core/state.js"></script>
+    <script src="src/core/StateManager.js"></script>
+    <script src="src/core/utils.js"></script>
+
+    <!-- ── Tier 2: shared transform utilities ───────────────────── -->
+    <script src="src/layers/LayerTransform.js"></script>
+
+    <!-- ── Tier 3: logic + UI modules ──────────────────────────── -->
+    <script src="src/logic/history.js"></script>
+    <script src="src/parsers/GifParser.js"></script>
+    <script src="src/parsers/SimpleGifHandler.js"></script>
+    <script src="src/logic/renderer.js"></script>
+    <script src="src/logic/animation.js"></script>
+    <script src="src/logic/layers.js"></script>
+    <script src="src/ui/layers.js"></script>
+    <script src="src/ui/properties.js"></script>
+    <script src="src/ui/colors.js"></script>
+    <script src="src/logic/ui.js"></script>
+    <script src="src/export/compositor.js"></script>
+    <script src="src/export/optimizer.js"></script>
+    <script src="src/export/preview3d.js"></script>
+    <script src="src/logic/export.js"></script>
+
+    <!-- Partial loader (must come before events/ so loadPartials() is defined) -->
+    <script src="src/partials/loader.js"></script>
+
+    <!-- events/ modules -->
+    <script src="src/events/drag.js"></script>
+    <script src="src/events/touch.js"></script>
+    <script src="src/events/keyboard.js"></script>
+    <script src="src/events/wheel.js"></script>
+    <script src="src/events/drop.js"></script>
+    <script src="src/events/controls.js"></script>
+    <script src="src/events/bootstrap.js"></script>
+
+    <script src="src/logic/project.js"></script>
+    <script src="src/logic/tutorial.js"></script>
+
+</body>
+
+</html>
