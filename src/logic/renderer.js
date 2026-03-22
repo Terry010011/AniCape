@@ -236,8 +236,7 @@ function updateGizmoUI() {
     box.style.left    = (centerX - w / 2) + 'px';
     box.style.top     = (centerY - h / 2) + 'px';
 
-    let rot = l.rotation;
-    if ((sx < 0) !== (sy < 0)) rot = -rot;
+    const rot = l.rotation;
     box.style.transform = `rotate(${rot}deg)`;
 
     const handles = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
