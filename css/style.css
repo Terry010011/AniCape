@@ -1755,3 +1755,13 @@ body[data-theme="dark"] .driver-popover-arrow-side-bottom {
     line-height: 1;
     letter-spacing: 0.5px;
 }
+.dev-github-link {
+    display: inline-flex;
+    align-items: center;
+    color: var(--text-sub);
+    transition: color 0.2s, transform 0.2s;
+}
+.dev-github-link:hover {
+    color: var(--text-main);
+    transform: scale(1.15);
+}
