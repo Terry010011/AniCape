@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: /sitemap.xml
+Sitemap: https://anicape.wryy.org/sitemap.xml
