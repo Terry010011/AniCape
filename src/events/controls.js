@@ -236,6 +236,15 @@ document.getElementById('propRot').addEventListener('change', (e) => {
     EventBus.emit('history:save');
 });
 
+// Smoothing Quality
+document.getElementById('propSmoothing').addEventListener('change', (e) => {
+    const l = state.layers.find(i => i.id === state.activeLayerId);
+    if (!l) return;
+    l.smoothing = e.target.value;
+    render();
+    EventBus.emit('history:save');
+});
+
 // Flip
 document.getElementById('btnFlipX').addEventListener('click', () => {
     const l = state.layers.find(i => i.id === state.activeLayerId);

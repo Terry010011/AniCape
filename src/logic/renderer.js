@@ -174,7 +174,7 @@ function render() {
         state.tempLayerCanvas.height = state.height;
         const lCtx = state.tempLayerCanvas.getContext('2d');
         lCtx.clearRect(0, 0, state.width, state.height);
-        lCtx.imageSmoothingEnabled = false;
+        LayerTransform.applySmoothing(lCtx, layer.smoothing);
 
         const displayImg = getLayerDisplayImage(layer);
         lCtx.save();

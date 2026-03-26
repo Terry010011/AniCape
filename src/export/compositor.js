@@ -45,7 +45,7 @@ function generateExportFrames() {
             layerCv.width = state.width;
             layerCv.height = state.height;
             const lCtx = layerCv.getContext('2d');
-            lCtx.imageSmoothingEnabled = false;
+            LayerTransform.applySmoothing(lCtx, layer.smoothing);
 
             lCtx.save();
             LayerTransform.applyToContext(lCtx, layer);

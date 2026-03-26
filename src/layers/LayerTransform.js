@@ -60,6 +60,27 @@ const LayerTransform = Object.freeze({
     },
 
     /**
+     * Set imageSmoothingEnabled / imageSmoothingQuality on a 2D context.
+     *
+     * Mapping:
+     *   none   → smoothing off    (pixel-perfect, default)
+     *   low    → quality 'low'    (bilinear)
+     *   medium → quality 'medium' (bicubic)
+     *   high   → quality 'high'   (Lanczos-like in most browsers)
+     *
+     * @param {CanvasRenderingContext2D} ctx
+     * @param {string} [smoothing='none']
+     */
+    applySmoothing(ctx, smoothing) {
+        if (smoothing && smoothing !== 'none') {
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = smoothing;
+        } else {
+            ctx.imageSmoothingEnabled = false;
+        }
+    },
+
+    /**
      * Hit-test: returns true when canvas point (mx, my) is inside
      * the layer's oriented bounding box.
      * @param {object} layer

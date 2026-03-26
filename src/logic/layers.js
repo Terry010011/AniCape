@@ -13,6 +13,7 @@ function createLayer(name, img, isAnimated = false, animationData = null) {
         y: state.height / 2,
         scale: 1, scaleX: 1, scaleY: 1,
         rotation: 0, opacity: 1.0,
+        smoothing: 'none',
         regions: [], visible: true, autoClip: true, syncGroupId: null,
         scaleLocked: true
     };

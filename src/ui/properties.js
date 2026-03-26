@@ -76,6 +76,13 @@ function updateLayerPropertiesUI() {
         propLayerName.disabled = !layer;
     }
 
+    // --- Smoothing Quality ---
+    const propSmoothing = document.getElementById('propSmoothing');
+    if (propSmoothing) {
+        propSmoothing.value    = layer ? (layer.smoothing || 'none') : 'none';
+        propSmoothing.disabled = !layer;
+    }
+
     // --- Animation frame controls ---
     syncAnimationControls(layer);
 

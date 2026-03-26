@@ -51,6 +51,7 @@ async function saveProject() {
             scaleY: layer.scaleY,
             rotation: layer.rotation,
             opacity: layer.opacity,
+            smoothing: layer.smoothing || 'none',
             visible: layer.visible !== false,
             regions: layer.regions || [],
             frameMultiplier: layer.isAnimated && layer.animationData ? layer.animationData.frameMultiplier : 1,
@@ -219,6 +220,7 @@ async function loadProject(file) {
                     scaleY: layerConfig.scaleY !== undefined ? layerConfig.scaleY : (layerConfig.scale || 1),
                     rotation: layerConfig.rotation || 0,
                     opacity: layerConfig.opacity !== undefined ? layerConfig.opacity : 1,
+                    smoothing: layerConfig.smoothing || 'none',
                     regions: layerConfig.regions || [],
                     visible: layerConfig.visible !== false
                 };
@@ -245,6 +247,7 @@ async function loadProject(file) {
                                 scaleY: layerConfig.scaleY !== undefined ? layerConfig.scaleY : (layerConfig.scale || 1),
                                 rotation: layerConfig.rotation || 0,
                                 opacity: layerConfig.opacity !== undefined ? layerConfig.opacity : 1,
+                                smoothing: layerConfig.smoothing || 'none',
                                 regions: layerConfig.regions || [],
                                 visible: layerConfig.visible !== false
                             });
