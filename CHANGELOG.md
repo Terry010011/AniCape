@@ -5,6 +5,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.1.0] — 2026-03-26
+
+### Added
+- Per-layer smoothing quality setting (None / Low / Medium / High) with `.anicape` project persistence
+- GitHub repository link in About modal developer card
+
+### Fixed
+- Gizmo bounding box rotation now correctly aligns with mirrored layers
+- `robots.txt` Sitemap changed from relative path to full URL
+- `sitemap.xml` lastmod date updated
+
+---
+
 ## [1.0.0] — Initial Release
 
 ### Added
